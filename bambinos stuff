@@ -1,0 +1,58 @@
+import cv2
+import numpy as np
+
+vid = cv2.VideoCapture("videoWlights4ed-05112023113839-0000.avi")
+
+
+LEFT = 220
+RIGHT = 540
+TOP = 0
+BOTTOM = 375
+
+# Number of pixels needed to count the monkey
+MONKEY_DETECTED_THRESHOLD = 5000
+
+monkeyFrames = 0
+
+
+def detect_monkey(frame):
+
+    global monkeyFrames
+    cropped = frame[TOP:BOTTOM, LEFT:RIGHT]
+
+    mask = cv2.inRange(cropped, 0, 30)
+
+    black_pix = np.sum(mask) / 255
+
+    print("Number of Pixels:", black_pix)
+
+    if black_pix > MONKEY_DETECTED_THRESHOLD:
+        print("Monkey Detected for this Frame")
+        monkeyFrames += 1
+
+    else:
+        print("No Monkey in this frame")
+
+    return mask
+
+
+while vid.isOpened():
+    ret, frame = vid.read()
+    if ret:
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+
+        mask = detect_monkey(frame)
+        # TODO make sure that monkeys are getting detected. Then remove the next two lines. Just for debugging
+        # cv2.imshow("Mask", mask)
+        # cv2.waitKey(0)
+
+    else:
+        break
+monkSeconds = monkeyFrames / 30
+
+print("Total Monkey Frames:", monkeyFrames)
+print("Total Seconds of Monk: ", monkSeconds)
+
+vid.release()
+cv2.destroyAllWindows()
