@@ -26,11 +26,13 @@ def create_avg_frame(frame): #pass the vid here?
     cropped = frame[TOP:BOTTOM, LEFT:RIGHT]
     frm = cv2.inRange(cropped, 0, 50)
     
+    # THIS IS WHAT I NEED TO ADJUST
+    
     #Mat Mean = Mat::zeros(width, height,CV_32F);
-    for(i=0; i<N; i++) {
-            mean += imread(fileName.c_str(),0);
-            }
-    mean /= N
+    #for(i=0; i<N; i++) {
+    #        mean += imread(fileName.c_str(),0);
+    #        }
+    #mean /= N
     
     return mean
     
