@@ -1,0 +1,98 @@
+import cv2
+import numpy as np
+# import matplotlib.pyplot as plt
+vid = cv2.VideoCapture("Thor_05_01.avi")
+
+total_frames = 0
+LEFT = 120
+RIGHT = 640
+TOP = 0
+BOTTOM = 475
+# background_created = False
+# Number of pixels needed to count the monkey
+MONKEY_DETECTED_THRESHOLD = 12750
+
+monkeyFrames = 0
+
+def create_avg_frame(frame): #pass the vid here?
+    #crop the vid? bc i only really want to look in the box
+    #dont want to crop this ill just do the math and then
+    #crop it at the end?
+    #people walk by and shit
+    #cropped = frame[TOP:BOTTOM, LEFT:RIGHT]
+    N = 60
+    #take the vid and create an avg we can return?
+    global avgFrame
+    cropped = frame[TOP:BOTTOM, LEFT:RIGHT]
+    frm = cv2.inRange(cropped, 0, 50)
+    
+    #Mat Mean = Mat::zeros(width, height,CV_32F);
+    for(i=0; i<N; i++) {
+            mean += imread(fileName.c_str(),0);
+            }
+    mean /= N
+    
+    return mean
+    
+def detect_monkey(frame, avg_frame):
+    #need to change this to that it instead compares the current cropped
+    #frame to the avg cropped frame
+    global monkeyFrames
+    cropped = frame[TOP:BOTTOM, LEFT:RIGHT]
+
+    mask = cv2.inRange(cropped, 0, 50)
+
+    #avg
+    
+    newFrame = mask-avg_frame
+
+    black_pix = np.sum(newFrame) / 255
+
+    print("Number of Pixels:", black_pix)
+
+    if black_pix > MONKEY_DETECTED_THRESHOLD:
+        print("Monkey Detected for this Frame")
+        monkeyFrames += 1
+
+    else:
+        print("No Monkey in this frame")
+
+    return mask
+    
+
+
+
+
+
+while vid.isOpened():
+    ret, frame = vid.read()
+    if ret:
+        total_frames += 1
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        
+        
+        if(total_frames <= 60){
+                avg_frame = create_avg_frame(frame)
+            }
+        else{
+        mask = detect_monkey(frame, avg_frame)
+        
+        cv2.imshow("Mask", mask)
+        cv2.imshow("Frame", frame)
+        cv2.waitKey(0)
+        
+        act_frames += 1
+        }
+        
+    else:
+        break
+
+monkSeconds = monkeyFrames / 30
+pct_monk = monkeyFrames / act_frames
+
+print("Total Monkey Frames:", monkeyFrames)
+print("Total Seconds of Monk: ", monkSeconds)
+print("Percent Monk: ", pct_monk)
+
+vid.release()
+cv2.destroyAllWindows()
