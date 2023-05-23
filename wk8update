@@ -1,0 +1,105 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+curVid = "//cube.ucsd.edu/millerlab/Vikram_P_Singh/Delayed_Visual_Task/Experimental_data/Habituation/Thor_05_22_23-05222023104243-0000.avi"
+vid = cv2.VideoCapture(curVid)
+
+total_frames = 0
+LEFT = 120
+RIGHT = 640
+TOP = 0
+BOTTOM = 475
+N = 60.0
+act_frames = 0
+avgFrame=np.zeros((475,520))
+
+MONKEY_DETECTED_THRESHOLD = 300
+
+monkeyFrames = 0
+
+def create_avg_frame(frame, avgFrame):
+
+    
+    crop = frame[TOP:BOTTOM, LEFT:RIGHT]
+    
+    frm = cv2.inRange(crop, 0, 50)
+    #print("frm type:")
+    #print(type(frm))
+    # flt = float(frm)
+    
+    frm= np.array(frm)/ N
+    # print("Max type")
+    # print(type(Max))
+    # return 0
+    # print("create avg func end!")
+    
+    sumFrame = avgFrame + frm
+    
+    return sumFrame
+    
+def detect_monkey(frame, avgFrame):
+
+    global monkeyFrames
+    cropped = frame[TOP:BOTTOM, LEFT:RIGHT]
+
+    mask = cv2.inRange(cropped, 0, 50)
+    
+    newFrame = mask-avgFrame
+    
+    black_pix = np.sum(newFrame) / 255
+    avg_pixels = np.sum(avgFrame) / 255
+    
+    print("Number of avg pixels", avg_pixels)
+    print("Number of Pixels:", black_pix)
+
+    if black_pix > MONKEY_DETECTED_THRESHOLD:
+        print("Monkey Detected for this Frame")
+        monkeyFrames += 1
+
+    else:
+        print("No Monkey in this frame")
+
+    return mask, newFrame
+    
+
+while vid.isOpened():
+    ret, frame = vid.read()
+    if ret:
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        
+        
+        if total_frames <= N :
+                avgFrame = create_avg_frame(frame, avgFrame)
+                total_frames+=1
+        else:
+            
+            mask,newFrame = detect_monkey(frame, avgFrame)
+            plt.clf()
+            plt.subplot(1, 3, 1)
+            plt.imshow( frame)
+            plt.title("frame"+ str(total_frames))
+            plt.subplot(1, 3, 2)
+            plt.imshow( mask)
+            plt.title("mask"+ str(total_frames))
+            plt.subplot(1,3,3)
+            plt.imshow( newFrame)
+            plt.title("frame"+ str(total_frames))
+            plt.show()
+            plt.draw()
+            cv2.waitKey(0)
+            total_frames+=1
+            act_frames+=1
+        
+    else:
+        break
+
+monkSeconds = monkeyFrames / 30
+pct_monk = monkeyFrames / act_frames
+
+print("Total Monkey Frames:", monkeyFrames)
+print("Total Seconds of Monk: ", monkSeconds)
+print("Percent Monk: ", pct_monk)
+
+vid.release()
+cv2.destroyAllWindows()
